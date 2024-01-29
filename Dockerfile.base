@@ -1,0 +1,34 @@
+#!/bin/sh
+FROM ubuntu:20.04
+
+ENV SPARK_VERSION=3.2.1
+ENV HADOOP_VERSION=3.2
+
+RUN apt-get update && \
+    apt-get install -y openjdk-11-jdk && \
+    apt-get install -y wget && \
+    apt-get install -y curl && \
+    apt-get install -y unzip && \
+    apt-get clean;
+
+
+
+RUN wget https://dlcdn.apache.org/spark/spark-3.3.1/spark-3.3.1-bin-hadoop3.tgz && tar -xvzf spark-3.3.1-bin-hadoop3.tgz \
+      && mv spark-3.3.1-bin-hadoop3 spark \
+      && rm spark-3.3.1-bin-hadoop3.tgz
+
+
+RUN export PATH="/spark/bin:$PATH"
+RUN export SPARK_HOME="/spark/"
+
+
+COPY ./target/scala-2.12/analisecotaparlamentar_2.12-1.0-RELEASE.jar /data/gsj/acp.jar
+COPY ./run.sh /data/gsj/run.sh
+WORKDIR /data/gsj
+RUN chmod +x run.sh
+
+RUN mkdir lib
+RUN wget https://jdbc.postgresql.org/download/postgresql-42.3.6.jar
+RUN mv postgresql-42.3.6.jar lib/postgresql.jar
+
+ENTRYPOINT ["/data/gsj/run.sh"]
